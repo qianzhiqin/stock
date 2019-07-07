@@ -13,13 +13,14 @@ from html.parser import HTMLParser
 # response = requests.get("http://q.10jqka.com.cn/gn/", headers=headers)
 # data = response.text
 # print(response.status_code)
-file_name = r'C:\\Users\\Administrator\\Desktop\\12345.txt'
+file_name = r'C:\\Users\\qianzhiqin\\Desktop\\abc.txt'
 f = open(file_name, 'r')
 data = f.read()
 # print(data)
 soup = BeautifulSoup(data, "lxml")
+aaa = soup.find_all('div', class_ ="cate_items")
 # content = soup.find_all('div', class_="cate_items")
-bbb = soup.find_all('a', target='_blank')
+bbb = BeautifulSoup(str(aaa), "lxml").find_all('a', target='_blank')
 for i in bbb:
     # print(i)
     soup_i = BeautifulSoup(str(i), "lxml").find_all('a')[0]
