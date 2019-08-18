@@ -361,11 +361,15 @@ api = FateadmApi(app_id, app_key, pd_id, pd_key)
 #   rsp.request_id：唯一订单号
 #   rsp.pred_rsp.value：识别结果
 #   rsp.err_msg：异常时返回异常详情
+# @staticmethod
 def rec_vcode_file(file_name, pred_type="30400"):
+    def sdfs():
+        pass
     resp = api.PredictFromFile(pred_type, file_name)
     if resp.ret_code == 0:
         return resp.pred_rsp.value
     else:
+        rec_vcode_file()
         return ''
 
 
