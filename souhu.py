@@ -28,7 +28,7 @@ for i in range(1, 500):
                 # browser.back()
                 # time.sleep(2)
                 browser.get(page)
-                if int(row2) >= 250:
+                if int(row2) >= 200:
                     print(price + '  ' + row2 + '   ' + title + '  ' + detail + '  ' + ' ' + qufu + '  ' + str(url))
         except StaleElementReferenceException as e:
             server = browser.find_elements_by_class_name('server-info')
