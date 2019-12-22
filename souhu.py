@@ -7,7 +7,7 @@ from selenium.common.exceptions import StaleElementReferenceException
 qufu_default = '纵横双线'
 browser = webdriver.Chrome()
 for i in range(1, 500):
-    page = 'http://tl.cyg.changyou.com/goods/selling?world_id=0&price=1-300&have_chosen=price*1-1000&page_num=' + str(
+    page = 'http://tl.cyg.changyou.com/goods/selling?world_id=0&price=1-200&have_chosen=price*1-1000&page_num=' + str(
         i) + '#goodsTag'
     browser.get(page)
     server = browser.find_elements_by_class_name('server-info')
@@ -28,7 +28,7 @@ for i in range(1, 500):
                 # browser.back()
                 # time.sleep(2)
                 browser.get(page)
-                if int(row2) >= 200:
+                if int(row2) >= 170:
                     print(price + '  ' + row2 + '   ' + title + '  ' + detail + '  ' + ' ' + qufu + '  ' + str(url))
         except StaleElementReferenceException as e:
             server = browser.find_elements_by_class_name('server-info')
