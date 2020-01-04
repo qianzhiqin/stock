@@ -1,10 +1,10 @@
 import requests
 import json
 import datetime
-import sqlite3
+from MysqlHelper import *
 
-def get_connect():
-	return  sqlite3.connect('stock.db')
+helper = MysqlHelper('okaiok.com', 'root', 'qq84607952', 'walle')
+helper.connect()
 
 def send_wechat(content):
 	requests.packages.urllib3.disable_warnings()
@@ -44,78 +44,27 @@ headers = {
 	"Connection":"keep-alive"
 }
 
-#获取实盘250天总收益的用户列表
-def get_user_list():
-	url = "http://spzhapi.eastmoney.com/rtV1"
-	params = {
-		"type":"rt_get_rank",
-		"rankType":"10003",
-		"recIdx":"0",
-		"recCnt":"100",
-		"rankid":"0",
-		"utToken":"FobyicMgeV7Y16FzbFwOUjd7IAADFJwyNdj4d9Ucxmf08vgWMsXcTWdgdSGeZAQvcL1593OBFLEj2PX5UQE2cev5oH8Q3JT0ruVIUBxZQrRJ7vJyQYJhSjQj3vgPhdIHCUb5cohXnpIKMqv5MUvXCzIXY7yvV_CoCMARORZIuD89e3iFQJhfO9qXMVbCln-YJTCmAOQvYCw2W9TWULgOpCqcbgLhUDUVy3wql-rDr-L9MSdWNcWzHA0kQPPGBtAEyPCJjeALJGgSuhM9LgpnF9JOEqi85uPKYpLnCET0n3vMgbz_hqI61g",
-		"ctToken":"teGgXbepe8SCyqBjUPi5eqjsNxfaKXpbWAWUI5PoJqnqZriwTnc2uK2e8bZZ00RQAGrJ7nxJW-2SY1Jat3EpE2zcwOCb766hn2ooaw7AvgP2YkfR4OodSUBUA5MJkwC_my7yXQXQiLbmC5HHz3y9qVMinTzA6e07VE96lzkbVPM",
-		"appVer":"8005001",
-	}
-	source = "eastmoney"
-
-
-	select_sql = "select userId,success from user where userId = ? and user = ? ;"
-	insert_sql = "insert into user (userId,user,source,success,createTime,updateTime) values (?,?,?,?,?,?);"
-	update_sql = "update  user set  success= ? where id= ? ;"
-	for num in range(0,8):
-		params["recIdx"] = num*100
-		response = requests.get(url=url, headers=headers, params=params)
-		res = bytes.decode(response.content, "utf-8")
-		map = json.loads(res)
-		data = map["data"]
-		for item in data:
-			conn = get_connect()
-			cursor = conn.cursor()
-			user_id = item["zjzh"]
-			user = item["zhuheName"]
-			success = item["rateForApp"]
-			create_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-			update_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-		
-			rows = cursor.execute(select_sql,(user_id,user))
-			# print(len(list(rows)))
-			length = len(list(rows))
-			if length <= 0 :
-				cursor.execute(insert_sql, (user_id, user, source, success, create_time, update_time))
-				conn.commit()
-				print("insert user " +user)
-			else:
-				for row in rows:
-					id = row[0]
-					success_tmp = row[1]
-					if success != success_tmp:
-						cursor.execute(update_sql, (success_tmp, id))
-						conn.commit()
-						print("update user " + user)
-			conn.close()
 def get_stock():
 	today =datetime.datetime.now().strftime('%Y%m%d')
-	today = "20191220"
+	# today = "20191101"
 	print("今天的日期为:" + today)
 	url = "http://spzhapi.eastmoney.com/rtV1"
 	params = {
 		"type": "rt_hold_change72",
 		"zh": "900004656",
 		"recIdx": "1",
-		"recCnt": "10",
+		"recCnt": "100",
 		"reqUserid": "1110114787578370",
 		"utToken": "FobyicMgeV7Y16FzbFwOUjd7IAADFJwyNdj4d9Ucxmf08vgWMsXcTWdgdSGeZAQvcL1593OBFLEj2PX5UQE2cev5oH8Q3JT0ruVIUBxZQrRJ7vJyQYJhSjQj3vgPhdIHCUb5cohXnpIKMqv5MUvXCzIXY7yvV_CoCMARORZIuD89e3iFQJhfO9qXMVbCln-YJTCmAOQvYCw2W9TWULgOpCqcbgLhUDUVy3wql-rDr-L9MSdWNcWzHA0kQPPGBtAEyPCJjeALJGgSuhM9LgpnF9JOEqi85uPKYpLnCET0n3vMgbz_hqI61g",
 		"ctToken": "teGgXbepe8SCyqBjUPi5eqjsNxfaKXpbWAWUI5PoJqnqZriwTnc2uK2e8bZZ00RQAGrJ7nxJW-2SY1Jat3EpE2zcwOCb766hn2ooaw7AvgP2YkfR4OodSUBUA5MJkwC_my7yXQXQiLbmC5HHz3y9qVMinTzA6e07VE96lzkbVPM",
 		"appVer": "8005001",
 	}
-	select_user=  "select userId,user,success from user where  cast(success as DOUBLE) > 100;"
-	conn = get_connect()
-	cursor = conn.cursor()
-	rows = cursor.execute(select_user)
-	select_stock = "select * from stock where stock=? and type=? and user=? and date = ?  and proportion=?"
-	insert_stock = "insert into stock (stock,type,price,source,userid,user,date,createTime,proportion) values (?,?,?,?,?,?,?,?,?)"
-	count = 0
+	select_user=  "select userId,user,success from user where success > 100 "
+	select_stock = "select * from stock where stock= %s and type= %s and user=%s and date = %s and proportion=%s "
+	insert_stock = "insert into stock (stock,type,price,source,userid,user,date,createTime,proportion) values (%s,%s,%s,%s,%s,%s,%s,%s,%s) "
+	rows = helper.fetchall(select_user)
+	source = "eastmoney_250day"
+
 	for row in rows:
 		user_id= row[0]
 		user= row[1]
@@ -125,22 +74,24 @@ def get_stock():
 		res = bytes.decode(response.content, "utf-8")
 		map = json.loads(res)
 		data = map["data"]
-	
+		
+		print("start user: " + user)
+		count = 0
 		for stock_info in data:
 			stock = stock_info["stkName"]
 			date = stock_info["tzrq"]
 			#0买，1卖
-			maimai = stock_info["lshj_mc"]
+			mc_bishu = stock_info["lshj_mc"]
+			mr_bishu = stock_info["lshj_mr"]
 			mc_price = stock_info["cjjg_mc"]
 			mr_price = stock_info["cjjg_mr"]
 			mc_bili = stock_info["cwhj_mc"]
 			mr_bili = stock_info["cwhj_mr"]
-		 
+		
 			if date == today:
-				source = "eastmoney"
 				create_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-				# 0为买
-				if "0" == maimai:
+				# 买
+				if "0" == mc_bishu:
 					type = "买"
 					price = mr_price
 					proportion = mr_bili
@@ -148,18 +99,14 @@ def get_stock():
 					type = "卖"
 					price = mc_price
 					proportion = mc_bili
-				cursor2 = conn.cursor()
-				rows2 = cursor2.execute(select_stock,(stock, type, user, date, proportion))
-				if len(list(rows2)) <= 0:
-					cursor2.execute(insert_stock,(stock,type,price,source,user_id,user,date,create_time,proportion) )
-					conn.commit()
+				 
+				rows2 = helper.fetchone(select_stock,[stock, type, user, date, proportion])
+				if not rows2:
+					helper.insert(insert_stock,[stock,type,price,source,user_id,user,date,create_time,proportion] )
 					count +=1
-	print("插入了 " +str(count))
-	conn.close()
+		print("end user count： " +str(count))
 	
 		
 	
 if __name__ == "__main__":
-    # msg = get_stock()
-    # send_wechat(msg)
 	get_stock()
