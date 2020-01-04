@@ -3,7 +3,7 @@ import pymysql
 class MysqlHelper:
 	'''python操作mysql的增删改查的封装'''
 	
-	def __init__(self, host, user, password, database, port=3306, charset='utf8'):
+	def __init__(self, host='localhost', user='root', password='qq84607952', database='walle', port=3306, charset='utf8'):
 		'''
 		初始化参数
 		:param host: 主机

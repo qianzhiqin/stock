@@ -27,9 +27,9 @@ def get_user_list():
 		"appVer": "8005001", }
 	source = "eastmoney_250day"
 	
-	select_sql = "select userId,success from user where userId = %s and user = %s ;"
-	insert_sql = "insert into user (userId,user,source,success,createTime,updateTime) values (%s,%s,%s,%s,%s,%s);"
-	update_sql = "update  user set  success= %s where id= %s ;"
+	select_sql = "select id,success from user where userId = %s and user = %s "
+	insert_sql = "insert into user (userId,user,source,success,createTime,updateTime) values (%s,%s,%s,%s,%s,%s)"
+	update_sql = "update user set success= %s where id= %s "
 	for num in range(0, 8):
 		params["recIdx"] = num * 100
 		response = requests.get(url=url, headers=headers, params=params)
@@ -48,13 +48,14 @@ def get_user_list():
 				helper.insert(insert_sql, [user_id, user, source, success, create_time, update_time])
 				print("insert user " + user)
 			else:
-				row = rows[0]
-				id = row[0]
-				success_tmp = row[1]
+				id = rows[0]
+				success_tmp = str(rows[1])
 				if success != success_tmp:
-					helper.update(update_sql, [success_tmp, id])
+					success_res = float(success)
+					helper.update(update_sql, [success_res, id])
 					print("update user " + user)
-
+				else:
+					print("not update user " + user)
 
 	
 if __name__ == "__main__":
