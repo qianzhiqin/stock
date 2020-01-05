@@ -1,10 +1,8 @@
-# coding:utf-8
 import json
 import time
 from urllib.parse import quote
-
+from MysqlHelper import *
 from selenium import webdriver
-
 
 list = ["平安银行", "万科A", "国农科技", "世纪星源", "深振业A", "全新好", "神州高铁", "中国宝安", "*ST美丽", "深物业A", "南玻A", "沙河股份", "深康佳A", "深中华A",
         "*ST神城", "深粮控股", "深华发A", "深科技", "深天地A", "特力A", "飞亚达A", "深圳能源", "国药一致", "深深房A", "富奥股份", "大悦城", "深桑达A", "神州数码",
@@ -246,19 +244,30 @@ browser = webdriver.Chrome()
 browser.set_page_load_timeout(30)
 browser.set_script_timeout(30)
 browser.get('http://www.10jqka.com.cn/')
-time.sleep(1)
+time.sleep(0.1)
 # browser.get('http://www.iwencai.com/stockpick/load-data?typed=0&preParams=&ts=1&f=1&qs=result_original&selfsectsn=&querytype=stock&searchfilter=&tid=stockpick&w=%E5%B9%B3%E5%AE%89%E9%93%B6%E8%A1%8C%E7%AD%B9%E7%A0%81%E5%88%86%E5%B8%83&queryarea=')
-print('自动登录成功...')
+print("start")
 
-
+helper = MysqlHelper('okaiok.com', 'root', 'qq84607952', 'walle')
+helper.connect()
+sql_select = "SELECT stock FROM chouma WHERE stock= %s "
+sql_update = "UPDATE chouma SET CODE=%s,stock=%s,price=%s,zhangfu=%s,huoli=%s,costdown90=%s,costup90=%s,costavg=%s,focus70=%s,focus90=%s WHERE stock = %s "
+sql_insert = "insert into chouma (code,stock,price,zhangfu,huoli,costdown90,costup90,costavg,focus70,focus90) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 for stock in list:
-	url_name = quote(stock + "筹码分布")
-	url = "http://www.iwencai.com/stockpick/load-data?typed=0&preParams=&ts=1&f=1&qs=result_original&selfsectsn=&querytype=stock&searchfilter=&tid=stockpick&w=" + url_name + "&queryarea="
-	browser.get(url)
-	body = browser.find_element_by_xpath("/html/body/pre").text
-	print("222")
-	data = json.loads(body)
-	title = data["data"]["result"]["title"]
-	chouma = data["data"]["result"]["result"]
-	print(chouma)
-	time.sleep(0.01)
+        url_name = quote(stock + "筹码分布")
+        url = "http://www.iwencai.com/stockpick/load-data?typed=0&preParams=&ts=1&f=1&qs=result_original&selfsectsn=&querytype=stock&searchfilter=&tid=stockpick&w=" + url_name + "&queryarea="
+        browser.get(url)
+        body = browser.find_element_by_xpath("/html/body/pre").text
+        print("start " +stock)
+        data = json.loads(body)
+        title = data["data"]["result"]["title"]
+        chouma = data["data"]["result"]["result"][0]
+        row = helper.fetchone(sql_select, [stock])
+        if not row:
+                helper.insert(sql_insert, chouma)
+                print("insert " +stock)
+        else:
+                chouma.append(stock)
+                helper.update(sql_update, chouma)
+                time.sleep(0.01)
+                print("update " + stock)

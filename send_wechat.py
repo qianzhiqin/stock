@@ -222,4 +222,5 @@ if __name__ == "__main__":
 	                          table_title=table_title,default_font_size = 14,table_title_font_size=16)
 	if result:
 		print('图表生成成功')
+	chouma_sql = "SELECT *,(price-costdown90 )/(costup90-costdown90) AS abc FROM chouma ORDER BY abc ASC"
 	# send_wechat_img(path)
