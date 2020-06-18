@@ -8,11 +8,9 @@ Host: tl.cyg.changyou.com
 Upgrade-Insecure-Requests: 1
 User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36""";
 
-if 4<=0:
-	print(1)
-def get_ua():
+def get_ua(user_agent):
 	headers = {}
-	lines = ua.split('\n')
+	lines = user_agent.split('\n')
 	for line in lines:
 		kv = line.split(": ")
 		headers[kv[0]] =kv[1]
