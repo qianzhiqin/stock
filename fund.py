@@ -26,6 +26,7 @@ def get_ua():
 
 
 helper = MysqlHelper('okaiok.com', 'root', 'qq84607952', 'walle')
+# helper = MysqlHelper('localhost', 'root', 'qq84607952', 'walle')
 helper.connect()
 
 select_sql = "SELECT id,code FROM fund WHERE code = %s "
@@ -35,6 +36,7 @@ update_sql = "UPDATE fund SET  name = %s, alias = %s, date = %s, dwjz = %s, ljjz
 headers = get_ua()
 today = datetime.datetime.now().strftime('%Y-%m-%d')
 yearago = (datetime.datetime.now() + datetime.timedelta(days=-366)).strftime('%Y-%m-%d')
+print(today +' 开始更新.')
 result = requests.get(
 	"http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft=all&rs=&gs=0&sc=zzf&st=desc&sd=" + yearago + "&ed=" + today + "&qdii=&tabSubtype=,,,,,&pi=1&pn=10000&dx=1&v=0.9102788336446412",
 	headers=headers, verify=False)
@@ -53,14 +55,14 @@ for item in data:
 	rows = helper.fetchone(select_sql, selectArr)
 	for i in range(len(split)):
 		if i < 17 or i == 20:
-			print(split[i], end=',')
+			# print(split[i], end=',')
 			if split[i] == '':
 				insertArr.append(0)
 				updateArr.append(0)
 			else:
 				insertArr.append(split[i])
 				updateArr.append(split[i])
-	print()
+	# print()
 	updateArr.remove(code)
 	updateArr.append(code)
 	if not rows:
@@ -69,3 +71,4 @@ for item in data:
 	else:
 		b = helper.update(update_sql, updateArr)
 		print("update " + code )
+print(today +' 更新完成.')
